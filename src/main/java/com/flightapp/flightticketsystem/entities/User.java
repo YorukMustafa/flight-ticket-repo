@@ -1,0 +1,55 @@
+package com.flightapp.flightticketsystem.entities;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
+
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Integer id;
+
+    @Column(name = "user_first_name")
+    private String firstName;
+
+    @Column(name = "user_last_name")
+    private String lastName;
+
+    @Email(message = "Lütfen geçerli bir e-posta adresi giriniz")
+    @NotNull(message = "E-posta alanı zorunludur")
+    @NotBlank(message = "E-posta alanı boş bırakılamaz")
+    @Column(name = "email")
+    private String email;
+
+    @NotNull(message = "Şifre alanı zorunludur")
+    @NotBlank(message = "Şifre alanı boş bırakılamaz")
+    @Column(name = "password")
+    private String password;
+
+    @OneToMany(mappedBy = "user")
+    private List<Ticket> tickets;
+
+    @ManyToMany(fetch = FetchType.EAGER) //kullanıcı sisteme giriş yaptığında rollerinin de anında veritabanından çekilmesini sağlar
+    @JoinTable(
+            name = "user_roles", // köprü tablonun adı
+            joinColumns = @JoinColumn(name = "user_id"), // bu tablodan gfidecek olan id
+            inverseJoinColumns = @JoinColumn(name = "role_id") //karşı tablodan gelecek id
+    )
+    private List<Role> roles;
+
+}
