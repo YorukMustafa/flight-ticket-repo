@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,5 +52,42 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id") //karşı tablodan gelecek id
     )
     private List<Role> roles;
+
+
+    // ==========================================
+    // SPRING SECURITY TARAFINDAN ZORUNLU İSTENEN METODLAR
+    // ==========================================
+
+    @Override
+    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
+        return roles.stream()
+                .map(role -> new org.springframework.security.core.authority.SimpleGrantedAuthority(role.getRoleName()))
+                .toList();
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email; // Sistemde kullanıcı adı olarak e-posta kullanılıyor
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 
 }

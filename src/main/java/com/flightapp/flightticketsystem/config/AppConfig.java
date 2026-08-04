@@ -1,6 +1,6 @@
 package com.flightapp.flightticketsystem.config;
 
-import com.flightapp.flightticketsystem.repository.IUsersRepository;
+import com.flightapp.flightticketsystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class AppConfig {
 
-    private final IUsersRepository usersRepository;
+    private final UserRepository usersRepository;
 
     @Bean
     public UserDetailsService userDetailsService() {
