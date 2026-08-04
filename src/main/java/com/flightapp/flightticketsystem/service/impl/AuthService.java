@@ -37,7 +37,7 @@ public class AuthService implements IAuthService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
 
-        rolesRepository.findByRoleName("USER").ifPresent(role -> user.getRoles().add(role));
+        rolesRepository.findByRoleName("Customer").ifPresent(role -> user.getRoles().add(role));
 
         usersRepository.save(user);
 

@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -51,7 +53,7 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"), // bu tablodan gfidecek olan id
             inverseJoinColumns = @JoinColumn(name = "role_id") //karşı tablodan gelecek id
     )
-    private List<Role> roles;
+    private List<Role> roles = new ArrayList<>();
 
 
     // ==========================================
@@ -60,6 +62,9 @@ public class User implements UserDetails {
 
     @Override
     public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
+        if (roles == null) {
+            return Collections.emptyList();
+        }
         return roles.stream()
                 .map(role -> new org.springframework.security.core.authority.SimpleGrantedAuthority(role.getRoleName()))
                 .toList();
