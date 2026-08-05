@@ -8,6 +8,7 @@
  * Production ortamında kullanıcıya görünmez.
  */
 import { StrictMode } from "react";
+import "./i18n";
 
 /*
  * React uygulamasını tarayıcıya bağlamak için kullanılır.

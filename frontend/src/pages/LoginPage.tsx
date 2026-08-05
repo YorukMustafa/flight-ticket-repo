@@ -1,287 +1,142 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
+import LanguageSwitcher from "../components/LanguageSwitcher";
 import { useAuth } from "../hooks/useAuth";
+import "./AuthPage.css";
 
-/*
- * LoginPage kullanıcının sisteme giriş yapmasını sağlayan sayfadır.
- *
- * Kullanıcıdan e-posta ve şifre bilgisi alınır.
- * Bilgiler doğrulandıktan sonra AuthContext içerisindeki
- * login() fonksiyonu çağrılır.
- *
- * Giriş başarılı olursa kullanıcının rolüne göre
- * Admin veya Customer paneline yönlendirme yapılır.
- */
 export default function LoginPage() {
-
-    /*
-     * useNavigate React Router'ın yönlendirme hookudur.
-     *
-     * Login başarılı olduktan sonra
-     * kullanıcıyı uygun panele göndermek için kullanıyoruz.
-     */
     const navigate = useNavigate();
-
-    /*
-     * AuthContext içerisindeki login fonksiyonuna erişiyoruz.
-     *
-     * Böylece LoginPage authentication işleminin detayını bilmez.
-     * Sadece login() fonksiyonunu çağırır.
-     *
-     * Authentication işleminin merkezi AuthContext'tir.
-     */
     const { login } = useAuth();
+    const { t } = useTranslation();
 
-    /*
-     * Form alanlarını React State ile yönetiyoruz.
-     *
-     * Böylece input içerikleri her değiştiğinde
-     * component güncellenir.
-     */
-
-    /* Kullanıcının girdiği e-posta */
     const [email, setEmail] = useState("");
-
-    /* Kullanıcının girdiği şifre */
     const [password, setPassword] = useState("");
-
-    /*
-     * Oluşabilecek hata mesajlarını tutar.
-     *
-     * Örneğin:
-     * - Alanlar boş bırakılırsa
-     * - Login başarısız olursa
-     */
     const [error, setError] = useState("");
-
-    /*
-     * Login işlemi devam ederken kullanılır.
-     *
-     * true olduğunda
-     *
-     * Buton pasif olur.
-     * "Giriş Yapılıyor..." yazısı görünür.
-     *
-     * Böylece kullanıcı aynı anda birden fazla kez
-     * giriş isteği gönderemez.
-     */
     const [loading, setLoading] = useState(false);
 
-    /*
-     * Form gönderildiğinde çalışan ana fonksiyondur.
-     *
-     * Login işleminin bütün kontrolü burada yapılmaktadır.
-     */
-    const handleSubmit = async (
-        event: FormEvent<HTMLFormElement>,
-    ) => {
-
-        /*
-         * Formun varsayılan davranışını engeller.
-         *
-         * Normalde form gönderildiğinde
-         * sayfa tamamen yenilenirdi.
-         *
-         * React SPA mantığında
-         * sayfanın yenilenmesini istemiyoruz.
-         */
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
-        /*
-         * Önceki hata mesajını temizliyoruz.
-         */
         setError("");
 
-        /*
-         * Basit frontend doğrulaması.
-         *
-         * Kullanıcı e-posta veya şifreyi boş bırakırsa
-         * backend'e istek göndermeden kullanıcı uyarılır.
-         *
-         * Böylece gereksiz istekler önlenmiş olur.
-         */
-        if (!email || !password) {
-
-            setError("E-posta ve şifre zorunludur.");
-
+        if (!email.trim() || !password.trim()) {
+            setError(t("auth.errors.loginRequired"));
             return;
         }
 
-        /*
-         * Login işlemi hata oluşturabileceği için
-         * try-catch yapısı kullanılmıştır.
-         */
         try {
-
-            /*
-             * Loading durumunu başlatıyoruz.
-             */
             setLoading(true);
-
-            /*
-             * AuthContext içerisindeki login fonksiyonunu çağırıyoruz.
-             *
-             * Gerçek projede burada backend API çağrısı yapılacaktır.
-             *
-             * Şu an mock authentication kullanılmaktadır.
-             */
-            const user = await login({
-
-                email,
-
-                password,
-
+            const user = await login({ email: email.trim(), password });
+            navigate(user.role === "ROLE_ADMIN" ? "/admin" : "/customer", {
+                replace: true,
             });
-
-            /*
-             * Login başarılı olduktan sonra
-             * kullanıcının rolü kontrol edilir.
-             *
-             * ROLE_ADMIN ise Admin paneline,
-             * diğer kullanıcılar Customer paneline yönlendirilir.
-             */
-            if (user.role === "ROLE_ADMIN") {
-
-                navigate("/admin");
-
-            } else {
-
-                navigate("/customer");
-
-            }
-
         } catch {
-
-            /*
-             * Login sırasında beklenmeyen bir hata oluşursa
-             * kullanıcı bilgilendirilir.
-             */
-            setError("Giriş sırasında bir hata oluştu.");
-
+            setError(t("auth.errors.loginFailed"));
         } finally {
-
-            /*
-             * İşlem başarılı da olsa
-             * başarısız da olsa
-             * loading kapatılır.
-             *
-             * finally bloğu her durumda çalışır.
-             */
             setLoading(false);
-
         }
     };
 
     return (
-        <main>
+        <main className="auth-page">
+            <LanguageSwitcher variant="floating" />
 
-            <h1>Giriş Yap</h1>
-
-            {/*
-             * Form submit edildiğinde
-             * handleSubmit fonksiyonu çalışır.
-             */}
-            <form onSubmit={handleSubmit}>
-
-                <div>
-
-                    <label htmlFor="email">
-
-                        E-posta
-
-                    </label>
-
-                    {/*
-                     * Controlled Component
-                     *
-                     * Input değeri React State tarafından yönetilir.
-                     *
-                     * Kullanıcı yazdıkça
-                     * email state'i güncellenir.
-                     */}
-                    <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(event) =>
-                            setEmail(event.target.value)
-                        }
-                    />
-
+            <section className="auth-container">
+                <div className="auth-brand-panel">
+                    <div className="auth-brand-content">
+                        <div className="auth-plane-icon" aria-hidden="true">
+                            ✈
+                        </div>
+                        <p className="auth-brand-name">
+                            {t("common.appName")}
+                        </p>
+                        <h2 className="auth-brand-title">
+                            {t("auth.welcomeTitle")}
+                        </h2>
+                        <p className="auth-brand-description">
+                            {t("auth.welcomeDescription")}
+                        </p>
+                    </div>
                 </div>
 
-                <div>
+                <div className="auth-form-panel">
+                    <div className="auth-form-wrapper">
+                        <h1 className="auth-title">
+                            {t("auth.loginTitle")}
+                        </h1>
+                        <p className="auth-subtitle">
+                            {t("auth.loginSubtitle")}
+                        </p>
 
-                    <label htmlFor="password">
+                        <form className="auth-form" onSubmit={handleSubmit}>
+                            <div className="auth-field">
+                                <label className="auth-label" htmlFor="email">
+                                    {t("auth.email")}
+                                </label>
+                                <input
+                                    className="auth-input"
+                                    id="email"
+                                    type="email"
+                                    value={email}
+                                    placeholder={t("auth.emailPlaceholder")}
+                                    autoComplete="email"
+                                    onChange={(event) =>
+                                        setEmail(event.target.value)
+                                    }
+                                />
+                            </div>
 
-                        Şifre
+                            <div className="auth-field">
+                                <label
+                                    className="auth-label"
+                                    htmlFor="password"
+                                >
+                                    {t("auth.password")}
+                                </label>
+                                <input
+                                    className="auth-input"
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    placeholder="••••••••"
+                                    autoComplete="current-password"
+                                    onChange={(event) =>
+                                        setPassword(event.target.value)
+                                    }
+                                />
+                            </div>
 
-                    </label>
+                            {error && (
+                                <p className="auth-error" role="alert">
+                                    {error}
+                                </p>
+                            )}
 
-                    {/*
-                     * Şifre alanı da Controlled Component'tir.
-                     *
-                     * type=password sayesinde
-                     * girilen karakterler gizlenir.
-                     */}
-                    <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(event) =>
-                            setPassword(event.target.value)
-                        }
-                    />
+                            <button
+                                className="auth-submit-button"
+                                type="submit"
+                                disabled={loading}
+                            >
+                                {loading
+                                    ? t("auth.loggingIn")
+                                    : t("auth.loginButton")}
+                            </button>
+                        </form>
 
+                        <p className="auth-footer">
+                            {t("auth.noAccount")} {" "}
+                            <Link className="auth-link" to="/register">
+                                {t("auth.goToRegister")}
+                            </Link>
+                        </p>
+
+                        <p className="auth-demo-info">
+                            {t("auth.demoAdmin")}
+                        </p>
+                    </div>
                 </div>
-
-                {/*
-                 * Eğer hata mesajı varsa
-                 * ekrana gösterilir.
-                 *
-                 * React'te buna koşullu render denir.
-                 */}
-                {error && <p>{error}</p>}
-
-                {/*
-                 * Login işlemi devam ederken
-                 * buton devre dışı bırakılır.
-                 *
-                 * Böylece kullanıcı aynı anda
-                 * tekrar tekrar giriş yapamaz.
-                 */}
-                <button
-                    type="submit"
-                    disabled={loading}
-                >
-
-                    {loading
-                        ? "Giriş yapılıyor..."
-                        : "Giriş Yap"}
-
-                </button>
-
-            </form>
-
-            {/*
-             * Hesabı olmayan kullanıcıyı
-             * Register sayfasına yönlendirir.
-             *
-             * Link kullanıldığı için
-             * sayfa yenilenmeden route değişir.
-             */}
-            <p>
-
-                Hesabın yok mu?
-
-                <Link to="/register">
-
-                    Kayıt ol
-
-                </Link>
-
-            </p>
-
+            </section>
         </main>
     );
 }
