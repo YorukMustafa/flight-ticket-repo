@@ -5,10 +5,11 @@ import LanguageSwitcher from "../components/LanguageSwitcher";
 import { useAuth } from "../hooks/useAuth";
 import "./StatusPage.css";
 
-export default function UnauthorizedPage() {
+export default function NotFoundPage() {
     const { t } = useTranslation();
     const { user } = useAuth();
-    const dashboardPath = !user
+
+    const homePath = !user
         ? "/login"
         : user.role === "ROLE_ADMIN"
           ? "/admin"
@@ -19,18 +20,16 @@ export default function UnauthorizedPage() {
             <LanguageSwitcher variant="floating" />
             <section className="status-card">
                 <div className="status-icon" aria-hidden="true">
-                    🔒
+                    🧭
                 </div>
-                <p className="status-code">403</p>
-                <h1 className="status-title">
-                    {t("unauthorized.title")}
-                </h1>
+                <p className="status-code">404</p>
+                <h1 className="status-title">{t("notFound.title")}</h1>
                 <p className="status-description">
-                    {t("unauthorized.description")}
+                    {t("notFound.description")}
                 </p>
                 <div className="status-actions">
-                    <Link className="status-button" to={dashboardPath}>
-                        {t("unauthorized.button")}
+                    <Link className="status-button" to={homePath}>
+                        {t("notFound.button")}
                     </Link>
                 </div>
             </section>

@@ -1,132 +1,58 @@
-import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
+import Navbar from "../components/Navbar";
 import { useAuth } from "../hooks/useAuth";
+import "./Dashboard.css";
 
-/*
- * AdminDashboard, ROLE_ADMIN yetkisine sahip kullanıcıların
- * giriş yaptıktan sonra göreceği yönetim panelidir.
- *
- * Bu sayfa şu an Aşama 1 kapsamında temel bir iskelet olarak hazırlanmıştır.
- *
- * İlerleyen aşamalarda:
- * - Uçuş yönetimi
- * - Koltuk yönetimi
- * - Rezervasyon yönetimi
- * - Kullanıcı yönetimi
- *
- * gibi admin işlemleri bu sayfaya eklenecektir.
- */
 export default function AdminDashboard() {
+    const { t } = useTranslation();
+    const { user } = useAuth();
 
-    /*
-     * React Router'ın yönlendirme hookudur.
-     *
-     * Çıkış yaptıktan sonra kullanıcıyı
-     * login ekranına göndermek için kullanılır.
-     */
-    const navigate = useNavigate();
-
-    /*
-     * AuthContext içerisindeki
-     *
-     * user
-     * logout()
-     *
-     * bilgilerine erişiyoruz.
-     *
-     * user:
-     * Giriş yapan kullanıcının bilgilerini içerir.
-     *
-     * logout:
-     * Kullanıcının oturumunu sonlandırır.
-     */
-    const { user, logout } = useAuth();
-
-    /*
-     * Kullanıcı çıkış yaptığında çalışan fonksiyondur.
-     */
-    const handleLogout = () => {
-
-        /*
-         * AuthContext içerisindeki logout fonksiyonunu çağırır.
-         *
-         * Bu işlem:
-         *
-         * - user bilgisini temizler.
-         * - token bilgisini temizler.
-         * - localStorage'daki oturumu siler.
-         */
-        logout();
-
-        /*
-         * Logout tamamlandıktan sonra
-         * kullanıcı tekrar Login ekranına yönlendirilir.
-         *
-         * Böylece korunan sayfalara tekrar erişebilmek için
-         * yeniden giriş yapılması gerekir.
-         */
-        navigate("/login");
-    };
+    const cards = [
+        ["✈", "dashboard.flightManagement"],
+        ["💺", "dashboard.seatManagement"],
+        ["📊", "dashboard.systemOverview"],
+    ] as const;
 
     return (
+        <div className="dashboard-page">
+            <Navbar />
+            <main className="dashboard-main">
+                <section className="dashboard-hero">
+                    <span className="dashboard-eyebrow">
+                        {t("dashboard.adminEyebrow")}
+                    </span>
+                    <h1 className="dashboard-title">
+                        {t("dashboard.adminTitle")}
+                    </h1>
+                    <p className="dashboard-description">
+                        <strong>{user?.email}</strong> — {" "}
+                        {t("dashboard.adminDescription")}
+                    </p>
+                </section>
 
-        <main>
-
-            {/*
-             * Sayfanın başlığını gösterir.
-             */}
-            <h1>Admin Paneli</h1>
-
-            {/*
-             * Giriş yapan admin kullanıcısının
-             * e-posta adresini gösterir.
-             *
-             * ?. (Optional Chaining)
-             *
-             * user henüz yüklenmemişse
-             * uygulamanın hata vermesini önler.
-             */
-            }
-            <p>
-
-                Hoş geldin,
-
-                {user?.email}
-
-            </p>
-
-            {/*
-             * Bu proje Aşama 1 olduğu için
-             * Admin paneli henüz geliştirilmemiştir.
-             *
-             * İlerleyen aşamalarda
-             * yönetim ekranları buraya eklenecektir.
-             */}
-            <p>
-
-                Uçuş ve koltuk yönetimi Aşama 2'de eklenecektir.
-
-            </p>
-
-            {/*
-             * Logout işlemini başlatır.
-             *
-             * type="button"
-             * kullanılarak butonun yanlışlıkla
-             * form submit etmesi engellenmiştir.
-             */}
-            <button
-
-                type="button"
-
-                onClick={handleLogout}
-
-            >
-
-                Çıkış Yap
-
-            </button>
-
-        </main>
-
+                <section className="dashboard-grid">
+                    {cards.map(([icon, titleKey]) => (
+                        <article className="dashboard-card" key={titleKey}>
+                            <div
+                                className="dashboard-card__icon"
+                                aria-hidden="true"
+                            >
+                                {icon}
+                            </div>
+                            <h2 className="dashboard-card__title">
+                                {t(titleKey)}
+                            </h2>
+                            <p className="dashboard-card__description">
+                                {t("dashboard.adminCardDescription")}
+                            </p>
+                            <span className="dashboard-card__status">
+                                {t("dashboard.comingSoon")}
+                            </span>
+                        </article>
+                    ))}
+                </section>
+            </main>
+        </div>
     );
 }
